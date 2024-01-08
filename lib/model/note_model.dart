@@ -7,8 +7,11 @@ class NoteModel {
   ColorModel color;
   bool isBold;
   bool isItalic;
+  String fontSize;
   DateTime datetime;
-  ToDoModel? todo;
+  bool isTodo;
+  List<ToDoModel>? todo;
+  List? images;
 
   NoteModel(
       {this.title,
@@ -16,12 +19,18 @@ class NoteModel {
       required this.color,
       required this.isBold,
       required this.isItalic,
-      required this.datetime});
+      required this.fontSize,
+      required this.datetime,
+      required this.isTodo,
+      this.images});
 
   NoteModel.todo(
-      {required this.todo,
+      {this.title,
+      required this.todo,
       required this.color,
       required this.datetime,
       required this.isBold,
-      required this.isItalic});
+      required this.isItalic,
+      required this.fontSize,
+      required this.isTodo});
 }

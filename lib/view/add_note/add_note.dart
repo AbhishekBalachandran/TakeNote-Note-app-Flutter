@@ -1,11 +1,18 @@
+import 'dart:io';
+
+import 'package:animations/animations.dart';
+import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:take_note/controller/notes_controller/notes_controller.dart';
 import 'package:take_note/model/color_model.dart';
 import 'package:take_note/model/note_model.dart';
 import 'package:take_note/utils/constants/color_constants.dart';
 import 'package:take_note/utils/databases/database.dart';
+import 'package:take_note/view/add_note/widgets/dialog_page/dialog_page.dart';
+import 'package:take_note/view/add_note/widgets/recordings/recordings.dart';
 import 'package:take_note/view/add_note/widgets/todoitem/todoitem.dart';
 import 'package:take_note/view/common_widgets/snackbar/snackbar.dart';
 
@@ -20,7 +27,7 @@ class _AddNoteState extends State<AddNote> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController todoController = TextEditingController();
   final TextEditingController contentController = TextEditingController();
-  bool isTodo = false;
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -28,51 +35,78 @@ class _AddNoteState extends State<AddNote> {
     final provider = Provider.of<NotesController>(context);
     final providers = Provider.of<NotesController>(context, listen: false);
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
         clearFun();
-        return true;
       },
       child: Scaffold(
         backgroundColor: provider.selectedColor,
         appBar: AppBar(
+          iconTheme: IconThemeData(color: ColorConstants.secondaryTxtColor),
           elevation: 0,
           backgroundColor: provider.selectedColor,
           actions: [
             Center(
               child: InkWell(
                 onTap: () {
-                  if (contentController.text != '') {
-                    providers.addNote(NoteModel(
+                  if (provider.isTodo) {
+                    // is todo
+                    if (provider.todoList!.isNotEmpty) {
+                      providers.addNote(NoteModel.todo(
                         title: titleController.text,
-                        content: contentController.text,
-                        color: ColorModel(
-                            color: provider.selectedColor,
-                            selectedIndex: provider.selectedColorIndex),
-                        isBold: false,
-                        isItalic: false,
-                        datetime: DateTime.now()));
-                    ShowSnackbar().showSnackbar(
-                        content: 'Note added successfully', context: context);
-                    Navigator.pop(context);
-                    clearFun();
+                          todo: provider.todoList,
+                          color: ColorModel(
+                              color: provider.selectedColor,
+                              selectedIndex: provider.selectedColorIndex),
+                          datetime: DateTime.now(),
+                          isBold: provider.isBold,
+                          isItalic: provider.isItalic,
+                          fontSize: provider.fontSize,
+                          isTodo: provider.isTodo));
+                      ShowSnackbar().showSnackbar(
+                          content: 'Note added successfully', context: context);
+                      Navigator.pop(context);
+                      clearFun();
+                    } else {
+                      ShowSnackbar().showSnackbar(
+                          content: 'Please add atleast a todo',
+                          context: context);
+                    }
                   } else {
-                    ShowSnackbar().showSnackbar(
-                        content: 'Empty note discarded', context: context);
-                    Navigator.pop(context);
-                    clearFun();
+                    // not todo
+                    if (contentController.text.isNotEmpty ||
+                        provider.images!.isNotEmpty) {
+                      providers.addNote(NoteModel(
+                          title: titleController.text,
+                          content: contentController.text,
+                          color: ColorModel(
+                              color: provider.selectedColor,
+                              selectedIndex: provider.selectedColorIndex),
+                          isBold: provider.isBold,
+                          isItalic: provider.isItalic,
+                          fontSize: provider.fontSize,
+                          datetime: DateTime.now(),
+                          isTodo: provider.isTodo,
+                          images: provider.images));
+                      ShowSnackbar().showSnackbar(
+                          content: 'Note added successfully', context: context);
+                      Navigator.pop(context);
+                      clearFun();
+                    } else {
+                      ShowSnackbar().showSnackbar(
+                          content: 'Empty note discarded', context: context);
+                      Navigator.pop(context);
+                      clearFun();
+                    }
                   }
                 },
                 child: Container(
                   padding: EdgeInsets.all(10),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'Done',
-                      style: TextStyle(
-                          color: ColorConstants.secondaryTxtColor,
-                          fontSize: 20),
-                    ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                        color: ColorConstants.secondaryTxtColor, fontSize: 20),
                   ),
                 ),
               ),
@@ -81,7 +115,7 @@ class _AddNoteState extends State<AddNote> {
         ),
         body: Column(
           children: [
-            isTodo
+            provider.isTodo
                 ? Expanded(
                     child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
@@ -95,6 +129,7 @@ class _AddNoteState extends State<AddNote> {
                             width: double.infinity,
                             child: TextField(
                               controller: titleController,
+                              textAlign: TextAlign.center,
                               autofocus: false,
                               cursorColor: Color.fromARGB(255, 157, 81, 255),
                               cursorWidth: 2,
@@ -115,8 +150,8 @@ class _AddNoteState extends State<AddNote> {
                         ListView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
-                          itemCount: provider.todoList.length,
-                          itemBuilder: (context, index) => ToDoItem(
+                          itemCount: provider.todoList!.length,
+                          itemBuilder: (context, index) => ToDoItemChecked(
                             todoIndex: index,
                           ),
                         ),
@@ -140,13 +175,30 @@ class _AddNoteState extends State<AddNote> {
                                         color:
                                             ColorConstants.secondaryTxtColor)),
                                 style: TextStyle(
-                                    color: ColorConstants.secondaryTxtColor),
+                                    color: ColorConstants.secondaryTxtColor,
+                                    fontSize: provider.fontSize == 'small'
+                                        ? 18
+                                        : provider.fontSize == 'large'
+                                            ? 28
+                                            : 22,
+                                    fontWeight: provider.isBold
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    fontStyle: provider.isItalic
+                                        ? FontStyle.italic
+                                        : FontStyle.normal),
                               ),
                             ),
                             trailing: InkWell(
                               onTap: () {
-                                providers.addTodo(todoController.text);
-                                todoController.clear();
+                                if (todoController.text.isNotEmpty) {
+                                  providers.addTodo(todoController.text);
+                                  todoController.clear();
+                                } else {
+                                  ShowSnackbar().showSnackbar(
+                                      content: 'Empty todo discarded',
+                                      context: context);
+                                }
                               },
                               child: Container(
                                 height: 30,
@@ -164,64 +216,208 @@ class _AddNoteState extends State<AddNote> {
                               ),
                             ),
                           ),
-                        )
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Checked items',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: ColorConstants.secondaryTxtColor),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: provider.todoList!.length,
+                          itemBuilder: (context, index) => ToDoItemUnChecked(
+                            todoIndex: index,
+                          ),
+                        ),
                       ],
                     ),
                   ))
                 : Expanded(
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 60,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                height: 50,
-                                width: width * 0.5,
-                                child: TextField(
-                                  controller: titleController,
-                                  textAlign: TextAlign.center,
-                                  autofocus: false,
-                                  cursorColor:
-                                      Color.fromARGB(255, 157, 81, 255),
-                                  cursorWidth: 2,
-                                  style: TextStyle(
-                                      color: ColorConstants.primaryTxtColor,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.w500),
-                                  decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: 'Input Title',
-                                      hintStyle: TextStyle(
-                                          color: ColorConstants.primaryTxtColor,
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w500)),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 60,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  height: 50,
+                                  width: width * 0.5,
+                                  child: TextField(
+                                    controller: titleController,
+                                    textAlign: TextAlign.center,
+                                    autofocus: false,
+                                    cursorColor:
+                                        Color.fromARGB(255, 157, 81, 255),
+                                    cursorWidth: 2,
+                                    style: TextStyle(
+                                        color: ColorConstants.primaryTxtColor,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w500),
+                                    decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: 'Input Title',
+                                        hintStyle: TextStyle(
+                                            color:
+                                                ColorConstants.primaryTxtColor,
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        TextField(
-                          controller: contentController,
-                          cursorColor: Color.fromARGB(255, 157, 81, 255),
-                          textAlign: TextAlign.center,
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Type something here...',
-                              hintStyle: TextStyle(
-                                  color: ColorConstants.secondaryTxtColor,
-                                  fontSize: 20)),
-                          style: TextStyle(
-                              color: ColorConstants.secondaryTxtColor,
-                              fontSize: 20),
-                          minLines: 1,
-                          maxLines: 10,
-                        ),
-                      ],
+                            ],
+                          ),
+                          TextField(
+                            controller: contentController,
+                            cursorColor: Color.fromARGB(255, 157, 81, 255),
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Type something here...',
+                                hintStyle: TextStyle(
+                                    color: ColorConstants.secondaryTxtColor,
+                                    fontSize: 20)),
+                            style: TextStyle(
+                                color: ColorConstants.secondaryTxtColor,
+                                fontSize: provider.fontSize == 'small'
+                                    ? 18
+                                    : provider.fontSize == 'large'
+                                        ? 28
+                                        : 22,
+                                fontWeight: provider.isBold
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontStyle: provider.isItalic
+                                    ? FontStyle.italic
+                                    : FontStyle.normal),
+                            minLines: 1,
+                            maxLines: 10,
+                          ),
+                          // images
+                          provider.images!.length == 1
+                              ? Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: InkWell(
+                                    onLongPress: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => FluidDialog(
+                                          // Use a custom curve for the alignment transition
+                                          alignmentCurve:
+                                              Curves.easeInOutCubicEmphasized,
+                                          // Setting custom durations for all animations.
+                                          sizeDuration:
+                                              const Duration(milliseconds: 300),
+                                          alignmentDuration:
+                                              const Duration(milliseconds: 600),
+                                          transitionDuration:
+                                              const Duration(milliseconds: 300),
+                                          reverseTransitionDuration:
+                                              const Duration(milliseconds: 50),
+                                          // Here we use another animation from the animations package instead of the default one.
+                                          transitionBuilder:
+                                              (child, animation) =>
+                                                  FadeScaleTransition(
+                                            animation: animation,
+                                            child: child,
+                                          ),
+                                          // Configuring how the dialog looks.
+                                          defaultDecoration: BoxDecoration(
+                                            color: ColorConstants.bgColor,
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                          rootPage: FluidDialogPage(
+                                            builder: (context) =>
+                                                DialogPage(imageIndex: 0),
+                                            alignment: Alignment.topRight,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Image.file(
+                                      File(provider.images![0]!.path),
+                                      height: 300,
+                                      width: double.infinity,
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(
+                                  height: height * 0.7,
+                                  child: MasonryGridView.count(
+                                    itemCount: provider.images!.length,
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    crossAxisCount: 3,
+                                    itemBuilder: (context, index) => InkWell(
+                                      onLongPress: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => FluidDialog(
+                                            // Use a custom curve for the alignment transition
+                                            alignmentCurve:
+                                                Curves.easeInOutCubicEmphasized,
+                                            // Setting custom durations for all animations.
+                                            sizeDuration: const Duration(
+                                                milliseconds: 300),
+                                            alignmentDuration: const Duration(
+                                                milliseconds: 600),
+                                            transitionDuration: const Duration(
+                                                milliseconds: 300),
+                                            reverseTransitionDuration:
+                                                const Duration(
+                                                    milliseconds: 50),
+                                            // Here we use another animation from the animations package instead of the default one.
+                                            transitionBuilder:
+                                                (child, animation) =>
+                                                    FadeScaleTransition(
+                                              animation: animation,
+                                              child: child,
+                                            ),
+                                            // Configuring how the dialog looks.
+                                            defaultDecoration: BoxDecoration(
+                                              color: ColorConstants.bgColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                            ),
+                                            rootPage: FluidDialogPage(
+                                              builder: (context) =>
+                                                  DialogPage(imageIndex: index),
+                                              alignment: Alignment.topRight,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: Image.file(
+                                          File(provider.images![index]!.path),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                          // audio recordings
+                          AudioRecordings(),
+                        ],
+                      ),
                     ),
                   ),
             Container(
@@ -235,7 +431,7 @@ class _AddNoteState extends State<AddNote> {
                       children: [
                         Padding(
                             padding: const EdgeInsets.all(8),
-                            child: isTodo
+                            child: provider.isTodo
                                 ? SizedBox()
                                 : IconButton(
                                     onPressed: () {
@@ -252,6 +448,10 @@ class _AddNoteState extends State<AddNote> {
                                                 color: ColorConstants.bgColor),
                                             child: Column(children: [
                                               ListTile(
+                                                onTap: () {
+                                                  providers.pickCameraImage();
+                                                  Navigator.pop(context);
+                                                },
                                                 leading: Icon(
                                                   Icons.photo_camera,
                                                   color: ColorConstants
@@ -266,6 +466,10 @@ class _AddNoteState extends State<AddNote> {
                                                 ),
                                               ),
                                               ListTile(
+                                                onTap: () {
+                                                  providers.pickGalleryImages();
+                                                  Navigator.pop(context);
+                                                },
                                                 leading: Icon(
                                                   Icons.image_outlined,
                                                   color: ColorConstants
@@ -279,25 +483,12 @@ class _AddNoteState extends State<AddNote> {
                                                   ),
                                                 ),
                                               ),
-                                              ListTile(
-                                                leading: Icon(
-                                                  Icons.mic_outlined,
-                                                  color: ColorConstants
-                                                      .secondaryTxtColor,
-                                                ),
-                                                title: Text(
-                                                  'Recording',
-                                                  style: TextStyle(
-                                                    color: ColorConstants
-                                                        .primaryTxtColor,
-                                                  ),
-                                                ),
-                                              ),
+                                             
                                               InkWell(
-                                                onTap: () => setState(() {
-                                                  isTodo = true;
+                                                onTap: () {
+                                                  provider.isTodo = true;
                                                   Navigator.pop(context);
-                                                }),
+                                                },
                                                 child: ListTile(
                                                   leading: Icon(
                                                     CupertinoIcons
@@ -473,57 +664,117 @@ class _AddNoteState extends State<AddNote> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceEvenly,
                                             children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: ColorConstants
-                                                            .secondaryTxtColor),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10)),
-                                                padding: EdgeInsets.all(10),
-                                                child: Center(
-                                                  child: Icon(
-                                                    Icons.format_size,
-                                                    size: 18,
-                                                    color: ColorConstants
-                                                        .secondaryTxtColor,
+                                              InkWell(
+                                                onTap: () {
+                                                  provider.fontSize = 'small';
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: provider
+                                                                  .fontSize !=
+                                                              'small'
+                                                          ? Colors.transparent
+                                                          : ColorConstants
+                                                              .secondaryTxtColor,
+                                                      border: provider
+                                                                  .fontSize !=
+                                                              'small'
+                                                          ? Border.all(
+                                                              color: ColorConstants
+                                                                  .secondaryTxtColor)
+                                                          : null,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  padding: EdgeInsets.all(10),
+                                                  child: Center(
+                                                    child: Icon(
+                                                      Icons.format_size,
+                                                      size: 18,
+                                                      color: provider
+                                                                  .fontSize !=
+                                                              'small'
+                                                          ? ColorConstants
+                                                              .secondaryTxtColor
+                                                          : ColorConstants
+                                                              .bgColor,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: ColorConstants
-                                                            .secondaryTxtColor),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10)),
-                                                padding: EdgeInsets.all(10),
-                                                child: Center(
-                                                  child: Icon(
-                                                    Icons.format_size,
-                                                    size: 22,
-                                                    color: ColorConstants
-                                                        .secondaryTxtColor,
+                                              InkWell(
+                                                onTap: () {
+                                                  provider.fontSize = 'default';
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: provider
+                                                                  .fontSize !=
+                                                              'default'
+                                                          ? Colors.transparent
+                                                          : ColorConstants
+                                                              .secondaryTxtColor,
+                                                      border: provider
+                                                                  .fontSize !=
+                                                              'default'
+                                                          ? Border.all(
+                                                              color: ColorConstants
+                                                                  .secondaryTxtColor)
+                                                          : null,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  padding: EdgeInsets.all(10),
+                                                  child: Center(
+                                                    child: Icon(
+                                                      Icons.format_size,
+                                                      size: 22,
+                                                      color: provider
+                                                                  .fontSize !=
+                                                              'default'
+                                                          ? ColorConstants
+                                                              .secondaryTxtColor
+                                                          : ColorConstants
+                                                              .bgColor,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: ColorConstants
-                                                            .secondaryTxtColor),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10)),
-                                                padding: EdgeInsets.all(10),
-                                                child: Center(
-                                                  child: Icon(
-                                                    Icons.format_size,
-                                                    size: 26,
-                                                    color: ColorConstants
-                                                        .secondaryTxtColor,
+                                              InkWell(
+                                                onTap: () {
+                                                  provider.fontSize = 'large';
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: provider
+                                                                  .fontSize !=
+                                                              'large'
+                                                          ? Colors.transparent
+                                                          : ColorConstants
+                                                              .secondaryTxtColor,
+                                                      border: provider
+                                                                  .fontSize !=
+                                                              'large'
+                                                          ? Border.all(
+                                                              color: ColorConstants
+                                                                  .secondaryTxtColor)
+                                                          : null,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  padding: EdgeInsets.all(10),
+                                                  child: Center(
+                                                    child: Icon(
+                                                      Icons.format_size,
+                                                      size: 26,
+                                                      color: provider
+                                                                  .fontSize !=
+                                                              'large'
+                                                          ? ColorConstants
+                                                              .secondaryTxtColor
+                                                          : ColorConstants
+                                                              .bgColor,
+                                                    ),
                                                   ),
                                                 ),
                                               )
@@ -541,41 +792,101 @@ class _AddNoteState extends State<AddNote> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceEvenly,
                                           children: [
-                                            Container(
-                                              width: 50,
-                                              height: 50,
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                      color: ColorConstants
-                                                          .secondaryTxtColor),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          40)),
-                                              child: Center(
-                                                child: Icon(
-                                                  Icons.format_bold,
-                                                  color: ColorConstants
-                                                      .secondaryTxtColor,
-                                                ),
-                                              ),
+                                            InkWell(
+                                              onTap: () {
+                                                provider.isBold =
+                                                    !provider.isBold;
+                                              },
+                                              child: provider.isBold
+                                                  ? Container(
+                                                      width: 55,
+                                                      height: 55,
+                                                      decoration: BoxDecoration(
+                                                          color: ColorConstants
+                                                              .secondaryTxtColor,
+                                                          border: Border.all(
+                                                              color: ColorConstants
+                                                                  .secondaryTxtColor),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      45)),
+                                                      child: Center(
+                                                        child: Icon(
+                                                          Icons.format_bold,
+                                                          size: 35,
+                                                          color: ColorConstants
+                                                              .bgColor,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Container(
+                                                      width: 50,
+                                                      height: 50,
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: ColorConstants
+                                                                  .secondaryTxtColor),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      40)),
+                                                      child: Center(
+                                                        child: Icon(
+                                                          Icons.format_bold,
+                                                          color: ColorConstants
+                                                              .secondaryTxtColor,
+                                                        ),
+                                                      ),
+                                                    ),
                                             ),
-                                            Container(
-                                              width: 50,
-                                              height: 50,
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                      color: ColorConstants
-                                                          .secondaryTxtColor),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          40)),
-                                              child: Center(
-                                                child: Icon(
-                                                  Icons.format_italic,
-                                                  color: ColorConstants
-                                                      .secondaryTxtColor,
-                                                ),
-                                              ),
+                                            InkWell(
+                                              onTap: () {
+                                                provider.isItalic =
+                                                    !provider.isItalic;
+                                              },
+                                              child: provider.isItalic
+                                                  ? Container(
+                                                      width: 55,
+                                                      height: 55,
+                                                      decoration: BoxDecoration(
+                                                          color: ColorConstants
+                                                              .secondaryTxtColor,
+                                                          border: Border.all(
+                                                              color: ColorConstants
+                                                                  .secondaryTxtColor),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      45)),
+                                                      child: Center(
+                                                        child: Icon(
+                                                          Icons.format_italic,
+                                                          size: 35,
+                                                          color: ColorConstants
+                                                              .bgColor,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Container(
+                                                      width: 50,
+                                                      height: 50,
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: ColorConstants
+                                                                  .secondaryTxtColor),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      40)),
+                                                      child: Center(
+                                                        child: Icon(
+                                                          Icons.format_italic,
+                                                          color: ColorConstants
+                                                              .secondaryTxtColor,
+                                                        ),
+                                                      ),
+                                                    ),
                                             )
                                           ],
                                         )
@@ -612,13 +923,18 @@ class _AddNoteState extends State<AddNote> {
                               ),
                             )),
                         Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.ios_share,
-                            size: 28,
-                            color: ColorConstants.secondaryTxtColor,
-                          ),
-                        ),
+                            padding: const EdgeInsets.all(8),
+                            child: IconButton(
+                              onPressed: () {
+                                print(
+                                    'Recordings length - ${provider.recordings.length}');
+                              },
+                              icon: Icon(
+                                Icons.ios_share,
+                                size: 28,
+                                color: ColorConstants.secondaryTxtColor,
+                              ),
+                            )),
                       ],
                     )
                   ],
@@ -634,8 +950,15 @@ class _AddNoteState extends State<AddNote> {
   void clearFun() {
     titleController.clear();
     contentController.clear();
+    todoController.clear();
     Provider.of<NotesController>(context, listen: false).selectedColor =
         color[0];
     Provider.of<NotesController>(context, listen: false).selectedColorIndex = 0;
+    Provider.of<NotesController>(context, listen: false).isTodo = false;
+    Provider.of<NotesController>(context, listen: false).todoList = [];
+    Provider.of<NotesController>(context, listen: false).fontSize = 'default';
+    Provider.of<NotesController>(context, listen: false).isBold = false;
+    Provider.of<NotesController>(context, listen: false).isItalic = false;
+    Provider.of<NotesController>(context, listen: false).images = [];
   }
 }
