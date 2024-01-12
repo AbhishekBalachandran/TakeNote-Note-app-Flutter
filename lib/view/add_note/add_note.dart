@@ -54,7 +54,7 @@ class _AddNoteState extends State<AddNote> {
                     // is todo
                     if (provider.todoList!.isNotEmpty) {
                       providers.addNote(NoteModel.todo(
-                        title: titleController.text,
+                          title: titleController.text,
                           todo: provider.todoList,
                           color: ColorModel(
                               color: provider.selectedColor,
@@ -442,7 +442,7 @@ class _AddNoteState extends State<AddNote> {
                                             builder: (BuildContext context,
                                                 StateSetter setStateSheet) {
                                           return Container(
-                                            height: height * 0.36,
+                                            height: height * 0.26,
                                             padding: EdgeInsets.all(10),
                                             decoration: BoxDecoration(
                                                 color: ColorConstants.bgColor),
@@ -451,6 +451,8 @@ class _AddNoteState extends State<AddNote> {
                                                 onTap: () {
                                                   providers.pickCameraImage();
                                                   Navigator.pop(context);
+                                                  setStateSheet(() {});
+                                                  setState(() {});
                                                 },
                                                 leading: Icon(
                                                   Icons.photo_camera,
@@ -469,6 +471,8 @@ class _AddNoteState extends State<AddNote> {
                                                 onTap: () {
                                                   providers.pickGalleryImages();
                                                   Navigator.pop(context);
+                                                  setStateSheet(() {});
+                                                  setState(() {});
                                                 },
                                                 leading: Icon(
                                                   Icons.image_outlined,
@@ -483,11 +487,12 @@ class _AddNoteState extends State<AddNote> {
                                                   ),
                                                 ),
                                               ),
-                                             
                                               InkWell(
                                                 onTap: () {
                                                   provider.isTodo = true;
                                                   Navigator.pop(context);
+                                                  setStateSheet(() {});
+                                                  setState(() {});
                                                 },
                                                 child: ListTile(
                                                   leading: Icon(
@@ -524,7 +529,7 @@ class _AddNoteState extends State<AddNote> {
                                   context: context,
                                   builder: (context) => StatefulBuilder(builder:
                                       (BuildContext context,
-                                          StateSetter setStateSheet) {
+                                          StateSetter inBottomSetState) {
                                     return Container(
                                       padding: EdgeInsets.all(10),
                                       height: height * 0.2,
@@ -558,10 +563,13 @@ class _AddNoteState extends State<AddNote> {
                                             itemBuilder: (context, index) =>
                                                 InkWell(
                                               onTap: () {
-                                                provider.selectedColor =
-                                                    color[index];
-                                                provider.selectedColorIndex =
-                                                    index;
+                                                inBottomSetState(() {
+                                                  provider.selectedColor =
+                                                      color[index];
+                                                  provider.selectedColorIndex =
+                                                      index;
+                                                });
+                                                setState(() {});
                                               },
                                               child: Padding(
                                                 padding:
@@ -667,6 +675,8 @@ class _AddNoteState extends State<AddNote> {
                                               InkWell(
                                                 onTap: () {
                                                   provider.fontSize = 'small';
+                                                  setStateSheet(() {});
+                                                  setState(() {});
                                                 },
                                                 child: Container(
                                                   decoration: BoxDecoration(
@@ -705,6 +715,8 @@ class _AddNoteState extends State<AddNote> {
                                               InkWell(
                                                 onTap: () {
                                                   provider.fontSize = 'default';
+                                                  setStateSheet(() {});
+                                                  setState(() {});
                                                 },
                                                 child: Container(
                                                   decoration: BoxDecoration(
@@ -743,6 +755,8 @@ class _AddNoteState extends State<AddNote> {
                                               InkWell(
                                                 onTap: () {
                                                   provider.fontSize = 'large';
+                                                  setStateSheet(() {});
+                                                  setState(() {});
                                                 },
                                                 child: Container(
                                                   decoration: BoxDecoration(
@@ -796,6 +810,8 @@ class _AddNoteState extends State<AddNote> {
                                               onTap: () {
                                                 provider.isBold =
                                                     !provider.isBold;
+                                                setStateSheet(() {});
+                                                setState(() {});
                                               },
                                               child: provider.isBold
                                                   ? Container(
@@ -844,6 +860,8 @@ class _AddNoteState extends State<AddNote> {
                                               onTap: () {
                                                 provider.isItalic =
                                                     !provider.isItalic;
+                                                setStateSheet(() {});
+                                                setState(() {});
                                               },
                                               child: provider.isItalic
                                                   ? Container(

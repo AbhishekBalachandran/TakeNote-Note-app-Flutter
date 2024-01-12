@@ -212,7 +212,7 @@ class _DetailState extends State<Detail> {
                               ListView.builder(
                                 shrinkWrap: true,
                                 physics: NeverScrollableScrollPhysics(),
-                                itemCount: provider.todoList!.length,
+                                itemCount: provider.todoList?.length,
                                 itemBuilder: (context, index) =>
                                     ToDoItemChecked(
                                   todoIndex: index,
@@ -636,101 +636,111 @@ class _DetailState extends State<Detail> {
                                     onPressed: () {
                                       showModalBottomSheet(
                                         context: context,
-                                        builder: (context) => Container(
-                                          padding: EdgeInsets.all(10),
-                                          height: height * 0.2,
-                                          decoration: BoxDecoration(
-                                              color: ColorConstants.bgColor),
-                                          child: Column(children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    'Color',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: ColorConstants
-                                                            .secondaryTxtColor),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            // list of colors
-                                            Container(
-                                              height: 60,
-                                              width: double.infinity,
-                                              child: ListView.builder(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                itemCount: color.length,
-                                                itemBuilder: (context, index) =>
-                                                    InkWell(
-                                                  onTap: () {
-                                                    providers.selectedColor =
-                                                        color[index];
-                                                    providers
-                                                            .selectedColorIndex =
-                                                        index;
-                                                  },
-                                                  child: Padding(
+                                        builder: (context) => StatefulBuilder(
+                                            builder: (BuildContext context,
+                                                StateSetter setStateSheet) {
+                                          return Container(
+                                            padding: EdgeInsets.all(10),
+                                            height: height * 0.2,
+                                            decoration: BoxDecoration(
+                                                color: ColorConstants.bgColor),
+                                            child: Column(children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  Padding(
                                                     padding:
                                                         const EdgeInsets.all(
                                                             8.0),
-                                                    child: Container(
-                                                      height: 50,
-                                                      width: 50,
-                                                      decoration: BoxDecoration(
-                                                          color: color[index],
-                                                          border: Border.all(
-                                                              color: ColorConstants
-                                                                  .secondaryTxtColor),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      40)),
-                                                      child: index == 0
-                                                          ? provider.selectedColorIndex ==
-                                                                  index
-                                                              ? Center(
-                                                                  child: Icon(
-                                                                    Icons.check,
-                                                                    size: 30,
-                                                                    color: ColorConstants
-                                                                        .secondaryTxtColor,
-                                                                  ),
-                                                                )
-                                                              : Center(
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .format_color_reset_outlined,
-                                                                    size: 30,
-                                                                    color: ColorConstants
-                                                                        .secondaryTxtColor,
-                                                                  ),
-                                                                )
-                                                          : provider.selectedColorIndex ==
-                                                                  index
-                                                              ? Center(
-                                                                  child: Icon(
-                                                                    Icons.check,
-                                                                    size: 30,
-                                                                    color: ColorConstants
-                                                                        .secondaryTxtColor,
-                                                                  ),
-                                                                )
-                                                              : null,
+                                                    child: Text(
+                                                      'Color',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: ColorConstants
+                                                              .secondaryTxtColor),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              // list of colors
+                                              Container(
+                                                height: 60,
+                                                width: double.infinity,
+                                                child: ListView.builder(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  itemCount: color.length,
+                                                  itemBuilder:
+                                                      (context, index) =>
+                                                          InkWell(
+                                                    onTap: () {
+                                                      providers.selectedColor =
+                                                          color[index];
+                                                      providers
+                                                              .selectedColorIndex =
+                                                          index;
+                                                      setStateSheet(() {});
+                                                      setState(() {});
+                                                    },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Container(
+                                                        height: 50,
+                                                        width: 50,
+                                                        decoration: BoxDecoration(
+                                                            color: color[index],
+                                                            border: Border.all(
+                                                                color: ColorConstants
+                                                                    .secondaryTxtColor),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        40)),
+                                                        child: index == 0
+                                                            ? provider.selectedColorIndex ==
+                                                                    index
+                                                                ? Center(
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .check,
+                                                                      size: 30,
+                                                                      color: ColorConstants
+                                                                          .secondaryTxtColor,
+                                                                    ),
+                                                                  )
+                                                                : Center(
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .format_color_reset_outlined,
+                                                                      size: 30,
+                                                                      color: ColorConstants
+                                                                          .secondaryTxtColor,
+                                                                    ),
+                                                                  )
+                                                            : provider.selectedColorIndex ==
+                                                                    index
+                                                                ? Center(
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .check,
+                                                                      size: 30,
+                                                                      color: ColorConstants
+                                                                          .secondaryTxtColor,
+                                                                    ),
+                                                                  )
+                                                                : null,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ]),
-                                        ),
+                                            ]),
+                                          );
+                                        }),
                                       );
                                     },
                                     icon: Icon(
@@ -745,286 +755,307 @@ class _DetailState extends State<Detail> {
                                     onPressed: () {
                                       showModalBottomSheet(
                                         context: context,
-                                        builder: (context) => Container(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.3,
-                                          decoration: BoxDecoration(
-                                              color: ColorConstants.bgColor),
-                                          padding: EdgeInsets.all(10),
-                                          child: Column(children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    'Size',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: ColorConstants
-                                                            .secondaryTxtColor),
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Row(
+                                        builder: (context) => StatefulBuilder(
+                                            builder: (BuildContext context,
+                                                StateSetter sizeSetStateSheet) {
+                                          return Container(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.3,
+                                            decoration: BoxDecoration(
+                                                color: ColorConstants.bgColor),
+                                            padding: EdgeInsets.all(10),
+                                            child: Column(children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Text(
+                                                      'Size',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: ColorConstants
+                                                              .secondaryTxtColor),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceEvenly,
+                                                  children: [
+                                                    InkWell(
+                                                      onTap: () {
+                                                        provider.fontSize =
+                                                            'small';
+                                                        sizeSetStateSheet(
+                                                            () {});
+                                                        setState(() {});
+                                                      },
+                                                      child: Container(
+                                                        decoration: BoxDecoration(
+                                                            color: provider
+                                                                        .fontSize !=
+                                                                    'small'
+                                                                ? Colors
+                                                                    .transparent
+                                                                : ColorConstants
+                                                                    .secondaryTxtColor,
+                                                            border: provider
+                                                                        .fontSize !=
+                                                                    'small'
+                                                                ? Border.all(
+                                                                    color: ColorConstants
+                                                                        .secondaryTxtColor)
+                                                                : null,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                        padding:
+                                                            EdgeInsets.all(10),
+                                                        child: Center(
+                                                          child: Icon(
+                                                            Icons.format_size,
+                                                            size: 18,
+                                                            color: provider
+                                                                        .fontSize !=
+                                                                    'small'
+                                                                ? ColorConstants
+                                                                    .secondaryTxtColor
+                                                                : ColorConstants
+                                                                    .bgColor,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    InkWell(
+                                                      onTap: () {
+                                                        provider.fontSize =
+                                                            'default';
+                                                        sizeSetStateSheet(
+                                                            () {});
+                                                        setState(() {});
+                                                      },
+                                                      child: Container(
+                                                        decoration: BoxDecoration(
+                                                            color: provider
+                                                                        .fontSize !=
+                                                                    'default'
+                                                                ? Colors
+                                                                    .transparent
+                                                                : ColorConstants
+                                                                    .secondaryTxtColor,
+                                                            border: provider
+                                                                        .fontSize !=
+                                                                    'default'
+                                                                ? Border.all(
+                                                                    color: ColorConstants
+                                                                        .secondaryTxtColor)
+                                                                : null,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                        padding:
+                                                            EdgeInsets.all(10),
+                                                        child: Center(
+                                                          child: Icon(
+                                                            Icons.format_size,
+                                                            size: 22,
+                                                            color: provider
+                                                                        .fontSize !=
+                                                                    'default'
+                                                                ? ColorConstants
+                                                                    .secondaryTxtColor
+                                                                : ColorConstants
+                                                                    .bgColor,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    InkWell(
+                                                      onTap: () {
+                                                        provider.fontSize =
+                                                            'large';
+                                                        sizeSetStateSheet(
+                                                            () {});
+                                                        setState(() {});
+                                                      },
+                                                      child: Container(
+                                                        decoration: BoxDecoration(
+                                                            color: provider
+                                                                        .fontSize !=
+                                                                    'large'
+                                                                ? Colors
+                                                                    .transparent
+                                                                : ColorConstants
+                                                                    .secondaryTxtColor,
+                                                            border: provider
+                                                                        .fontSize !=
+                                                                    'large'
+                                                                ? Border.all(
+                                                                    color: ColorConstants
+                                                                        .secondaryTxtColor)
+                                                                : null,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                        padding:
+                                                            EdgeInsets.all(10),
+                                                        child: Center(
+                                                          child: Icon(
+                                                            Icons.format_size,
+                                                            size: 26,
+                                                            color: provider
+                                                                        .fontSize !=
+                                                                    'large'
+                                                                ? ColorConstants
+                                                                    .secondaryTxtColor
+                                                                : ColorConstants
+                                                                    .bgColor,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Divider(
+                                                  color: ColorConstants
+                                                      .secondaryTxtColor,
+                                                ),
+                                              ),
+                                              Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceEvenly,
                                                 children: [
                                                   InkWell(
                                                     onTap: () {
-                                                      provider.fontSize =
-                                                          'small';
+                                                      provider.isBold =
+                                                          !provider.isBold;
+                                                      sizeSetStateSheet(() {});
+                                                      setState(() {});
                                                     },
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: provider
-                                                                      .fontSize !=
-                                                                  'small'
-                                                              ? Colors
-                                                                  .transparent
-                                                              : ColorConstants
-                                                                  .secondaryTxtColor,
-                                                          border: provider
-                                                                      .fontSize !=
-                                                                  'small'
-                                                              ? Border.all(
-                                                                  color: ColorConstants
-                                                                      .secondaryTxtColor)
-                                                              : null,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      10)),
-                                                      padding:
-                                                          EdgeInsets.all(10),
-                                                      child: Center(
-                                                        child: Icon(
-                                                          Icons.format_size,
-                                                          size: 18,
-                                                          color: provider
-                                                                      .fontSize !=
-                                                                  'small'
-                                                              ? ColorConstants
-                                                                  .secondaryTxtColor
-                                                              : ColorConstants
-                                                                  .bgColor,
-                                                        ),
-                                                      ),
-                                                    ),
+                                                    child: provider.isBold
+                                                        ? Container(
+                                                            width: 55,
+                                                            height: 55,
+                                                            decoration: BoxDecoration(
+                                                                color: ColorConstants
+                                                                    .secondaryTxtColor,
+                                                                border: Border.all(
+                                                                    color: ColorConstants
+                                                                        .secondaryTxtColor),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            45)),
+                                                            child: Center(
+                                                              child: Icon(
+                                                                Icons
+                                                                    .format_bold,
+                                                                size: 35,
+                                                                color:
+                                                                    ColorConstants
+                                                                        .bgColor,
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : Container(
+                                                            width: 50,
+                                                            height: 50,
+                                                            decoration: BoxDecoration(
+                                                                border: Border.all(
+                                                                    color: ColorConstants
+                                                                        .secondaryTxtColor),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            40)),
+                                                            child: Center(
+                                                              child: Icon(
+                                                                Icons
+                                                                    .format_bold,
+                                                                color: ColorConstants
+                                                                    .secondaryTxtColor,
+                                                              ),
+                                                            ),
+                                                          ),
                                                   ),
                                                   InkWell(
                                                     onTap: () {
-                                                      provider.fontSize =
-                                                          'default';
+                                                      provider.isItalic =
+                                                          !provider.isItalic;
+                                                      sizeSetStateSheet(() {});
+                                                      setState(() {});
                                                     },
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: provider
-                                                                      .fontSize !=
-                                                                  'default'
-                                                              ? Colors
-                                                                  .transparent
-                                                              : ColorConstants
-                                                                  .secondaryTxtColor,
-                                                          border: provider
-                                                                      .fontSize !=
-                                                                  'default'
-                                                              ? Border.all(
-                                                                  color: ColorConstants
-                                                                      .secondaryTxtColor)
-                                                              : null,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      10)),
-                                                      padding:
-                                                          EdgeInsets.all(10),
-                                                      child: Center(
-                                                        child: Icon(
-                                                          Icons.format_size,
-                                                          size: 22,
-                                                          color: provider
-                                                                      .fontSize !=
-                                                                  'default'
-                                                              ? ColorConstants
-                                                                  .secondaryTxtColor
-                                                              : ColorConstants
-                                                                  .bgColor,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      provider.fontSize =
-                                                          'large';
-                                                    },
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: provider
-                                                                      .fontSize !=
-                                                                  'large'
-                                                              ? Colors
-                                                                  .transparent
-                                                              : ColorConstants
-                                                                  .secondaryTxtColor,
-                                                          border: provider
-                                                                      .fontSize !=
-                                                                  'large'
-                                                              ? Border.all(
-                                                                  color: ColorConstants
-                                                                      .secondaryTxtColor)
-                                                              : null,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      10)),
-                                                      padding:
-                                                          EdgeInsets.all(10),
-                                                      child: Center(
-                                                        child: Icon(
-                                                          Icons.format_size,
-                                                          size: 26,
-                                                          color: provider
-                                                                      .fontSize !=
-                                                                  'large'
-                                                              ? ColorConstants
-                                                                  .secondaryTxtColor
-                                                              : ColorConstants
-                                                                  .bgColor,
-                                                        ),
-                                                      ),
-                                                    ),
+                                                    child: provider.isItalic
+                                                        ? Container(
+                                                            width: 55,
+                                                            height: 55,
+                                                            decoration: BoxDecoration(
+                                                                color: ColorConstants
+                                                                    .secondaryTxtColor,
+                                                                border: Border.all(
+                                                                    color: ColorConstants
+                                                                        .secondaryTxtColor),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            45)),
+                                                            child: Center(
+                                                              child: Icon(
+                                                                Icons
+                                                                    .format_italic,
+                                                                size: 35,
+                                                                color:
+                                                                    ColorConstants
+                                                                        .bgColor,
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : Container(
+                                                            width: 50,
+                                                            height: 50,
+                                                            decoration: BoxDecoration(
+                                                                border: Border.all(
+                                                                    color: ColorConstants
+                                                                        .secondaryTxtColor),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            40)),
+                                                            child: Center(
+                                                              child: Icon(
+                                                                Icons
+                                                                    .format_italic,
+                                                                color: ColorConstants
+                                                                    .secondaryTxtColor,
+                                                              ),
+                                                            ),
+                                                          ),
                                                   )
                                                 ],
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Divider(
-                                                color: ColorConstants
-                                                    .secondaryTxtColor,
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                InkWell(
-                                                  onTap: () {
-                                                    provider.isBold =
-                                                        !provider.isBold;
-                                                  },
-                                                  child: provider.isBold
-                                                      ? Container(
-                                                          width: 55,
-                                                          height: 55,
-                                                          decoration: BoxDecoration(
-                                                              color: ColorConstants
-                                                                  .secondaryTxtColor,
-                                                              border: Border.all(
-                                                                  color: ColorConstants
-                                                                      .secondaryTxtColor),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          45)),
-                                                          child: Center(
-                                                            child: Icon(
-                                                              Icons.format_bold,
-                                                              size: 35,
-                                                              color:
-                                                                  ColorConstants
-                                                                      .bgColor,
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : Container(
-                                                          width: 50,
-                                                          height: 50,
-                                                          decoration: BoxDecoration(
-                                                              border: Border.all(
-                                                                  color: ColorConstants
-                                                                      .secondaryTxtColor),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          40)),
-                                                          child: Center(
-                                                            child: Icon(
-                                                              Icons.format_bold,
-                                                              color: ColorConstants
-                                                                  .secondaryTxtColor,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                ),
-                                                InkWell(
-                                                  onTap: () {
-                                                    provider.isItalic =
-                                                        !provider.isItalic;
-                                                  },
-                                                  child: provider.isItalic
-                                                      ? Container(
-                                                          width: 55,
-                                                          height: 55,
-                                                          decoration: BoxDecoration(
-                                                              color: ColorConstants
-                                                                  .secondaryTxtColor,
-                                                              border: Border.all(
-                                                                  color: ColorConstants
-                                                                      .secondaryTxtColor),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          45)),
-                                                          child: Center(
-                                                            child: Icon(
-                                                              Icons
-                                                                  .format_italic,
-                                                              size: 35,
-                                                              color:
-                                                                  ColorConstants
-                                                                      .bgColor,
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : Container(
-                                                          width: 50,
-                                                          height: 50,
-                                                          decoration: BoxDecoration(
-                                                              border: Border.all(
-                                                                  color: ColorConstants
-                                                                      .secondaryTxtColor),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          40)),
-                                                          child: Center(
-                                                            child: Icon(
-                                                              Icons
-                                                                  .format_italic,
-                                                              color: ColorConstants
-                                                                  .secondaryTxtColor,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                )
-                                              ],
-                                            )
-                                          ]),
-                                        ),
+                                              )
+                                            ]),
+                                          );
+                                        }),
                                       );
                                     },
                                     icon: Icon(

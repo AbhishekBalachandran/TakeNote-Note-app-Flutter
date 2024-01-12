@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:animations/animations.dart';
+import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -10,6 +12,7 @@ import 'package:take_note/controller/notes_controller/notes_controller.dart';
 import 'package:take_note/utils/constants/color_constants.dart';
 import 'package:take_note/view/add_note/add_note.dart';
 import 'package:take_note/view/detail/detail.dart';
+import 'package:take_note/view/notes/widgets/dialog_page_notes.dart';
 import 'package:take_note/view/notes/widgets/todo.dart';
 
 class Notes extends StatefulWidget {
@@ -22,6 +25,7 @@ class Notes extends StatefulWidget {
 class _NotesState extends State<Notes> {
   @override
   void initState() {
+    Provider.of<NotesController>(context, listen: false).getNote();
     super.initState();
   }
 
@@ -30,7 +34,6 @@ class _NotesState extends State<Notes> {
     final provider = Provider.of<NotesController>(context);
     final providers = Provider.of<NotesController>(context, listen: false);
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: ColorConstants.bgColor,
       appBar: AppBar(
@@ -74,19 +77,20 @@ class _NotesState extends State<Notes> {
                   color: ColorConstants.secondaryTxtColor,
                 )),
           ),
-          Padding(
-            padding: const EdgeInsets.all(4),
-            child: IconButton(
-                onPressed: () {
-                  providers.switchViewType();
-                },
-                icon: Icon(
-                  provider.isGridView == true
-                      ? CupertinoIcons.rectangle_grid_1x2
-                      : CupertinoIcons.rectangle_grid_2x2,
-                  color: ColorConstants.secondaryTxtColor,
-                )),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(4),
+          //   child: IconButton(
+          //       onPressed: () {
+          //         providers.switchViewType();
+          //         setState(() {});
+          //       },
+          //       icon: Icon(
+          //         provider.isGridView == true
+          //             ? CupertinoIcons.rectangle_grid_1x2
+          //             : CupertinoIcons.rectangle_grid_2x2,
+          //         color: ColorConstants.secondaryTxtColor,
+          //       )),
+          // ),
           // Padding(
           //   padding: const EdgeInsets.all(4),
           //   child: Center(
@@ -195,6 +199,39 @@ class _NotesState extends State<Notes> {
                             MaterialPageRoute(
                               builder: (context) => Detail(noteIndex: index),
                             ));
+                      },
+                      onLongPress: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => FluidDialog(
+                            // Use a custom curve for the alignment transition
+                            alignmentCurve: Curves.easeInOutCubicEmphasized,
+                            // Setting custom durations for all animations.
+                            sizeDuration: const Duration(milliseconds: 300),
+                            alignmentDuration:
+                                const Duration(milliseconds: 600),
+                            transitionDuration:
+                                const Duration(milliseconds: 300),
+                            reverseTransitionDuration:
+                                const Duration(milliseconds: 50),
+                            // Here we use another animation from the animations package instead of the default one.
+                            transitionBuilder: (child, animation) =>
+                                FadeScaleTransition(
+                              animation: animation,
+                              child: child,
+                            ),
+                            // Configuring how the dialog looks.
+                            defaultDecoration: BoxDecoration(
+                              color: ColorConstants.bgColor,
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            rootPage: FluidDialogPage(
+                              builder: (context) =>
+                                  DialogNotePage(noteIndex: index),
+                              alignment: Alignment.topRight,
+                            ),
+                          ),
+                        );
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(4),

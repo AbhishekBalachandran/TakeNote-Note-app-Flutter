@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:take_note/model/note_model.dart';
@@ -7,6 +8,7 @@ import 'package:take_note/model/todo_model.dart';
 import 'package:take_note/utils/databases/database.dart';
 
 class NotesController with ChangeNotifier {
+  final Box<NoteModel> box = Hive.box<NoteModel>('noteBox');
   List<NoteModel> notes = [];
   List<ToDoModel>? todoList = [];
   Color? selectedColor = color[0];
@@ -41,9 +43,16 @@ class NotesController with ChangeNotifier {
     }
   }
 
+  // get notes
+  getNote() async {
+    notes = await box.values.toList();
+    notifyListeners();
+  }
+
   // add note
-  addNote(NoteModel note) {
-    notes.add(note);
+  addNote(NoteModel note) async {
+    await box.add(note);
+    getNote();
     notifyListeners();
   }
 
@@ -55,14 +64,15 @@ class NotesController with ChangeNotifier {
   }
 
   // update note
-  updateNote(int noteIndex, NoteModel note) {
-    notes[noteIndex] = note;
+  updateNote(int noteIndex, NoteModel note) async {
+    await box.putAt(noteIndex, note);
     notifyListeners();
   }
 
   // delete note
-  deleteNote(int noteIndex) {
-    notes.removeAt(noteIndex);
+  deleteNote(int noteIndex) async {
+    await box.deleteAt(noteIndex);
+    getNote();
     notifyListeners();
   }
 
