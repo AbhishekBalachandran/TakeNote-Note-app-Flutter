@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:animations/animations.dart';
 import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/cupertino.dart';
@@ -57,58 +55,6 @@ class _NotesState extends State<Notes> {
                       ..shader = ColorConstants.linearGradient))
           ]),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(4),
-            child: IconButton(
-                onPressed: () {
-                  Provider.of<NotesController>(context, listen: false)
-                          .notes
-                          .isNotEmpty
-                      ? print(
-                          Provider.of<NotesController>(context, listen: false)
-                              .notes[0]
-                              .todo?[0]
-                              .todoText)
-                      : null;
-                },
-                icon: Icon(
-                  CupertinoIcons.search,
-                  color: ColorConstants.secondaryTxtColor,
-                )),
-          ),
-          // Padding(
-          //   padding: const EdgeInsets.all(4),
-          //   child: IconButton(
-          //       onPressed: () {
-          //         providers.switchViewType();
-          //         setState(() {});
-          //       },
-          //       icon: Icon(
-          //         provider.isGridView == true
-          //             ? CupertinoIcons.rectangle_grid_1x2
-          //             : CupertinoIcons.rectangle_grid_2x2,
-          //         color: ColorConstants.secondaryTxtColor,
-          //       )),
-          // ),
-          // Padding(
-          //   padding: const EdgeInsets.all(4),
-          //   child: Center(
-          //     child: Container(
-          //       width: 25,
-          //       height: 25,
-          //       decoration: BoxDecoration(
-          //           border: Border.all(color: ColorConstants.secondaryTxtColor),
-          //           borderRadius: BorderRadius.circular(30)),
-          //       child: Center(
-          //           child: Icon(
-          //         Icons.more_horiz_outlined,
-          //         size: 20,
-          //       )),
-          //     ),
-          //   ),
-          // )
-        ],
       ),
       floatingActionButton: SpeedDial(
         childMargin: EdgeInsets.all(25),
@@ -247,7 +193,9 @@ class _NotesState extends State<Notes> {
                               ? Column(
                                   children: [
                                     // title
-                                    provider.notes[index].title != null
+                                    provider.notes[index].title != null &&
+                                            provider
+                                                .notes[index].title!.isNotEmpty
                                         ? Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.start,
@@ -282,24 +230,28 @@ class _NotesState extends State<Notes> {
                                         : SizedBox(),
                                     // to-dos
                                     SizedBox(
-                                      width: width * 0.3,
-                                      child: ListView.builder(
-                                        shrinkWrap: true,
-                                        physics: NeverScrollableScrollPhysics(),
-                                        itemCount: (provider
-                                                    .notes[index].todo!.length >
-                                                5
-                                            ? 5
-                                            : provider
-                                                .notes[index].todo!.length),
-                                        itemBuilder: (context, todoIndex) =>
-                                            !provider.notes[index]
-                                                    .todo![todoIndex].isDone
-                                                ? ToDoItem(
-                                                    todoIndex: todoIndex,
-                                                    noteIndex: index,
-                                                  )
-                                                : SizedBox(),
+                                      width: width * 0.4,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ListView.builder(
+                                          shrinkWrap: true,
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          itemCount: (provider.notes[index]
+                                                      .todo!.length >
+                                                  5
+                                              ? 5
+                                              : provider
+                                                  .notes[index].todo!.length),
+                                          itemBuilder: (context, todoIndex) =>
+                                              !provider.notes[index]
+                                                      .todo![todoIndex].isDone
+                                                  ? ToDoItem(
+                                                      todoIndex: todoIndex,
+                                                      noteIndex: index,
+                                                    )
+                                                  : SizedBox(),
+                                        ),
                                       ),
                                     ),
                                     // date & time
@@ -328,11 +280,8 @@ class _NotesState extends State<Notes> {
                                                 0
                                         ? SizedBox()
                                         : Container(
-                                            child: Image.file(
-                                              File(
-                                                provider.notes[index]
-                                                    .images![0]!.path,
-                                              ),
+                                            child: Image.memory(
+                                              provider.notes[index].images![0],
                                               fit: BoxFit.fitWidth,
                                             ),
                                           ),

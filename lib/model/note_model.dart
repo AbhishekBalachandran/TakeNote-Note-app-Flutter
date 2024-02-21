@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:hive/hive.dart';
 import 'package:take_note/model/color_model.dart';
 import 'package:take_note/model/todo_model.dart';
@@ -24,7 +26,7 @@ class NoteModel {
   @HiveField(8)
   List<ToDoModel>? todo;
   @HiveField(9)
-  List? images;
+  List<Uint8List>? images;
 
   NoteModel(
       {this.title,

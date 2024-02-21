@@ -25,7 +25,7 @@ class NoteModelAdapter extends TypeAdapter<NoteModel> {
       fontSize: fields[5] as String,
       datetime: fields[6] as DateTime,
       isTodo: fields[7] as bool,
-      images: (fields[9] as List?)?.cast<dynamic>(),
+      images: (fields[9] as List?)?.cast<Uint8List>(),
     )..todo = (fields[8] as List?)?.cast<ToDoModel>();
   }
 

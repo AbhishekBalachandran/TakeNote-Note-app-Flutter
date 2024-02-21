@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:fluid_dialog/fluid_dialog.dart';
@@ -12,7 +11,6 @@ import 'package:take_note/model/note_model.dart';
 import 'package:take_note/utils/constants/color_constants.dart';
 import 'package:take_note/utils/databases/database.dart';
 import 'package:take_note/view/add_note/widgets/dialog_page/dialog_page.dart';
-import 'package:take_note/view/add_note/widgets/recordings/recordings.dart';
 import 'package:take_note/view/add_note/widgets/todoitem/todoitem.dart';
 import 'package:take_note/view/common_widgets/snackbar/snackbar.dart';
 
@@ -49,7 +47,7 @@ class _AddNoteState extends State<AddNote> {
           actions: [
             Center(
               child: InkWell(
-                onTap: () {
+                onTap: () async {
                   if (provider.isTodo) {
                     // is todo
                     if (provider.todoList!.isNotEmpty) {
@@ -259,6 +257,7 @@ class _AddNoteState extends State<AddNote> {
                                 child: Container(
                                   height: 50,
                                   width: width * 0.5,
+                                  padding: EdgeInsets.all(8),
                                   child: TextField(
                                     controller: titleController,
                                     textAlign: TextAlign.center,
@@ -351,8 +350,8 @@ class _AddNoteState extends State<AddNote> {
                                         ),
                                       );
                                     },
-                                    child: Image.file(
-                                      File(provider.images![0]!.path),
+                                    child: Image.memory(
+                                      provider.images![0],
                                       height: 300,
                                       width: double.infinity,
                                     ),
@@ -406,16 +405,13 @@ class _AddNoteState extends State<AddNote> {
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(4),
-                                        child: Image.file(
-                                          File(provider.images![index]!.path),
+                                        child: Image.memory(
+                                          provider.images![index],
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-
-                          // audio recordings
-                          AudioRecordings(),
                         ],
                       ),
                     ),

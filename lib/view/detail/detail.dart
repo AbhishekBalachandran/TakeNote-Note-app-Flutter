@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:animations/animations.dart';
 import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/cupertino.dart';
@@ -97,7 +95,7 @@ class _DetailState extends State<Detail> {
           actions: [
             Center(
               child: InkWell(
-                onTap: () {
+                onTap: () async {
                   if (provider.notes[widget.noteIndex].isTodo) {
                     // is todo
                     if (provider.todoList!.isNotEmpty) {
@@ -185,8 +183,8 @@ class _DetailState extends State<Detail> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 8),
                                 child: Container(
-                                  height: 50,
                                   width: double.infinity,
+                                  padding: EdgeInsets.all(8),
                                   child: TextField(
                                     controller: titleController,
                                     textAlign: TextAlign.center,
@@ -327,8 +325,8 @@ class _DetailState extends State<Detail> {
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Container(
-                                        height: 50,
                                         width: width * 0.5,
+                                        padding: EdgeInsets.all(8),
                                         child: TextField(
                                           controller: titleController,
                                           textAlign: TextAlign.center,
@@ -435,8 +433,8 @@ class _DetailState extends State<Detail> {
                                                   ),
                                                 );
                                               },
-                                              child: Image.file(
-                                                File(provider.images![0]!.path),
+                                              child: Image.memory(
+                                                provider.images![0],
                                                 height: 300,
                                                 width: double.infinity,
                                               ),
@@ -507,9 +505,8 @@ class _DetailState extends State<Detail> {
                                                 child: Padding(
                                                   padding:
                                                       const EdgeInsets.all(4),
-                                                  child: Image.file(
-                                                    File(provider
-                                                        .images![index]!.path),
+                                                  child: Image.memory(
+                                                    provider.images![index],
                                                   ),
                                                 ),
                                               ),
@@ -1076,8 +1073,17 @@ class _DetailState extends State<Detail> {
                                       showDialog(
                                         context: context,
                                         builder: (context) => AlertDialog(
+                                          backgroundColor: Colors.black,
+                                          icon: Icon(
+                                            Icons.info,
+                                            color: Colors.grey,
+                                          ),
                                           title: Text(
-                                              'Are you sure, you want to delete?'),
+                                            'Are you sure, you want to delete?',
+                                            style: TextStyle(
+                                                color: ColorConstants
+                                                    .primaryTxtColor),
+                                          ),
                                           actions: [
                                             Row(
                                               mainAxisAlignment:
@@ -1095,12 +1101,11 @@ class _DetailState extends State<Detail> {
                                                     style: ElevatedButton
                                                         .styleFrom(
                                                             backgroundColor:
-                                                                const Color
-                                                                    .fromARGB(
+                                                                Color.fromARGB(
                                                                     255,
-                                                                    228,
-                                                                    186,
-                                                                    183)),
+                                                                    75,
+                                                                    136,
+                                                                    74)),
                                                     onPressed: () {
                                                       Navigator.popUntil(
                                                         context,
@@ -1115,7 +1120,12 @@ class _DetailState extends State<Detail> {
                                                               'Note deleted successfully',
                                                           context: context);
                                                     },
-                                                    child: Text('Delete'))
+                                                    child: Text(
+                                                      'Delete',
+                                                      style: TextStyle(
+                                                          color: ColorConstants
+                                                              .primaryTxtColor),
+                                                    ))
                                               ],
                                             )
                                           ],

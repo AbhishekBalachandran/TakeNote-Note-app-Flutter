@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,9 +19,10 @@ class NotesController with ChangeNotifier {
   String fontSize = 'default';
   bool isBold = false;
   bool isItalic = false;
-  List? images = [];
+  List<Uint8List>? images = [];
   bool isRecording = false;
   List recordings = [];
+  List<NoteModel> filteredNotes = [];
 
   // date formatting
   dateFormat(DateTime dateTime) {
@@ -66,6 +68,7 @@ class NotesController with ChangeNotifier {
   // update note
   updateNote(int noteIndex, NoteModel note) async {
     await box.putAt(noteIndex, note);
+    getNote();
     notifyListeners();
   }
 
@@ -93,7 +96,8 @@ class NotesController with ChangeNotifier {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.camera);
       if (image != null) {
-        images?.add(XFile(image.path));
+        var imageByte = await XFile(image.path).readAsBytes();
+        images?.add(imageByte);
       }
     } catch (e) {
       print("Error picking image: $e");
@@ -108,7 +112,8 @@ class NotesController with ChangeNotifier {
       List<XFile> listImages = pickedImage;
       if (listImages.isNotEmpty) {
         for (var i = 0; i < listImages.length; i++) {
-          images?.add(File(listImages[i].path));
+          var imageByte = await File(listImages[i].path).readAsBytes();
+          images?.add(imageByte);
         }
       }
       print('Images added length - ${images!.length}');
@@ -121,12 +126,6 @@ class NotesController with ChangeNotifier {
   // removeImage
   removeImage(int imageIndex) {
     images!.removeAt(imageIndex);
-    notifyListeners();
-  }
-
-  // switching grid view
-  switchViewType() {
-    isGridView = !isGridView;
     notifyListeners();
   }
 }
